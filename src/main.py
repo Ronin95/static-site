@@ -1,24 +1,23 @@
-# Import the new functions from generation.py
-from generation import copy_directory, generate_page
+from generation import copy_directory, generate_pages_recursive
 import os
 
 def main():
     # Define paths
     static_path = "static"
     public_path = "public"
-    content_path = "content/index.md"
+    content_path = "content"  # This is now the root content dir
     template_path = "template.html"
-    dest_file_path = "public/index.html"
     
     # 1. Clean public dir and copy static files
     print("Copying static files to public directory...")
     copy_directory(static_path, public_path)
     
-    # 2. Generate the page
-    generate_page(
-        from_path=content_path,
+    # 2. Generate all pages recursively
+    print("Generating all pages...")
+    generate_pages_recursive(
+        dir_path_content=content_path,
         template_path=template_path,
-        dest_path=dest_file_path
+        dest_dir_path=public_path
     )
     
     print("...Site generation complete!")

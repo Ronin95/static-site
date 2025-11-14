@@ -1,7 +1,8 @@
 import os
 import shutil
 
-# Import the functions we'll need from our other modules
+# Make sure this import matches your file name
+# (You renamed it to markdown_blocks)
 from markdown_blocks import (
     markdown_to_html_node,
     extract_title
@@ -71,3 +72,39 @@ def generate_page(from_path, template_path, dest_path):
     # Write the new HTML file
     with open(dest_path, 'w') as f:
         f.write(final_html)
+
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    """
+    Recursively finds markdown files in a content directory,
+    and generates HTML pages from them.
+    """
+    # List all items in the current content directory
+    for item in os.listdir(dir_path_content):
+        item_path = os.path.join(dir_path_content, item) # e.g., "content/blog"
+        
+        # If it's a file, check if it's markdown and generate a page
+        if os.path.isfile(item_path):
+            if item.endswith(".md"):
+                # Build the destination path
+                # Change the extension from .md to .html
+                dest_file_name = os.path.splitext(item)[0] + ".html"
+                dest_path = os.path.join(dest_dir_path, dest_file_name)
+                
+                # Call the single-page generator
+                generate_page(
+                    from_path=item_path,
+                    template_path=template_path,
+                    dest_path=dest_path
+                )
+        
+        # If it's a directory, recurse
+        elif os.path.isdir(item_path):
+            # Build the new destination directory path
+            new_dest_dir_path = os.path.join(dest_dir_path, item) # e.g., "public/blog"
+            # Call this function again with the new paths
+            generate_pages_recursive(
+                dir_path_content=item_path,
+                template_path=template_path,
+                dest_dir_path=new_dest_dir_path
+            )
