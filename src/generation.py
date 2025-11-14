@@ -38,7 +38,7 @@ def copy_directory(source_path, dest_path):
         elif os.path.isdir(source_item_path):
             copy_directory(source_item_path, dest_item_path)
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath="/"):
     """
     Generates an HTML page from a markdown file and a template.
     """
@@ -62,6 +62,10 @@ def generate_page(from_path, template_path, dest_path):
     # 5. Replace placeholders
     final_html = template_content.replace("{{ Title }}", title)
     final_html = final_html.replace("{{ Content }}", html_content)
+
+    # --- FIX 2: Add the basepath link replacements ---
+    final_html = final_html.replace('href="/', f'href="{basepath}')
+    final_html = final_html.replace('src="/', f'src="{basepath}')
     
     # 6. Write to destination path
     # Ensure destination directory exists
@@ -73,8 +77,7 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, 'w') as f:
         f.write(final_html)
 
-
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath="/"):
     """
     Recursively finds markdown files in a content directory,
     and generates HTML pages from them.
@@ -91,20 +94,23 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 dest_file_name = os.path.splitext(item)[0] + ".html"
                 dest_path = os.path.join(dest_dir_path, dest_file_name)
                 
-                # Call the single-page generator
+                # --- FIX 4: Pass basepath to generate_page ---
                 generate_page(
                     from_path=item_path,
                     template_path=template_path,
-                    dest_path=dest_path
+                    dest_path=dest_path,
+                    basepath=basepath
                 )
         
         # If it's a directory, recurse
         elif os.path.isdir(item_path):
             # Build the new destination directory path
             new_dest_dir_path = os.path.join(dest_dir_path, item) # e.g., "public/blog"
-            # Call this function again with the new paths
+            # --- FIX 5: Pass basepath to the recursive call ---
             generate_pages_recursive(
                 dir_path_content=item_path,
                 template_path=template_path,
-                dest_dir_path=new_dest_dir_path
+                dest_dir_path=new_dest_dir_path,
+                basepath=basepath
             )
+            
