@@ -1,11 +1,12 @@
 import unittest
+from markdown_blocks import extract_title
 from inline_markdown import (
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
     text_to_textnodes,
     extract_markdown_links,
-    extract_markdown_images,
+    extract_markdown_images
 )
 
 from textnode import TextNode, TextType
@@ -191,6 +192,31 @@ class TestInlineMarkdown(unittest.TestCase):
             nodes,
         )
 
+    def test_extract_title(self):
+        md = """
+# This is the Title
+        
+This is a paragraph.
+        
+## This is H2
+"""
+        title = extract_title(md)
+        self.assertEqual(title, "This is the Title")
+
+    def test_extract_title_no_h1(self):
+        md = """
+This is a paragraph.
+        
+## This is H2
+"""
+        # Test that it raises an exception
+        with self.assertRaises(Exception):
+            extract_title(md)
+
+    def test_extract_title_extra_whitespace(self):
+        md = "#   Title with spaces   "
+        title = extract_title(md)
+        self.assertEqual(title, "Title with spaces")
 
 if __name__ == "__main__":
     unittest.main()
