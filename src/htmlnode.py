@@ -57,24 +57,18 @@ class LeafNode(HTMLNode):
             value (str): The text content of the node. Required.
             props (dict, optional): HTML attributes.
         """
-        # Call the parent constructor.
-        # children is always None for a LeafNode.
         super().__init__(tag, value, None, props)
     
     def to_html(self):
         """
         Renders the LeafNode as an HTML string.
         """
-        # Raise ValueError if value is missing
         if self.value is None:
             raise ValueError("Invalid HTML: LeafNode requires a value")
         
-        # If no tag, return raw text
         if self.tag is None:
             return self.value
         
-        # Build the HTML string
-        # Get attributes from the inherited props_to_html()
         attributes = self.props_to_html()
         return f"<{self.tag}{attributes}>{self.value}</{self.tag}>"
     
@@ -83,3 +77,51 @@ class LeafNode(HTMLNode):
         Provides a developer-friendly string representation of the LeafNode.
         """
         return f"LeafNode({self.tag}, {self.value}, {self.props})"
+
+
+# --- New ParentNode Class ---
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None):
+        """
+        Initializes a ParentNode.
+        A ParentNode must have a tag and children.
+        
+        Args:
+            tag (str): The HTML tag (e.g., 'p', 'a').
+            children (list): A list of child HTMLNode objects.
+            props (dict, optional): HTML attributes.
+        """
+        # Call the parent constructor.
+        # value is always None for a ParentNode.
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        """
+        Renders the ParentNode and its children as an HTML string.
+        This method is recursive.
+        """
+        # 1. Check for a tag
+        if self.tag is None:
+            raise ValueError("Invalid HTML: ParentNode requires a tag")
+        
+        # 2. Check for children
+        if self.children is None or not self.children:
+            raise ValueError("Invalid HTML: ParentNode requires children")
+        
+        # 3. Build the inner HTML by calling to_html() on each child
+        children_html = ""
+        for child in self.children:
+            children_html += child.to_html()
+            
+        # 4. Get attributes from the inherited props_to_html()
+        attributes = self.props_to_html()
+        
+        # 5. Return the full tag with children inside
+        return f"<{self.tag}{attributes}>{children_html}</{self.tag}>"
+
+    def __repr__(self):
+        """
+        Provides a developer-friendly string representation of the ParentNode.
+        """
+        return f"ParentNode({self.tag}, {self.children}, {self.props})"
+
