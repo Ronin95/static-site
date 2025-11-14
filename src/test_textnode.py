@@ -1,6 +1,7 @@
 import unittest
-# Use a relative import to get the classes from textnode.py
-from textnode import TextNode, TextType
+# Import all necessary components
+from textnode import TextNode, TextType, text_node_to_html_node
+from htmlnode import LeafNode
 
 class TestTextNode(unittest.TestCase):
     # This is the test you provided
@@ -32,6 +33,53 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is a text node", TextType.LINK, "httpss://boot.dev")
         node2 = TextNode("This is a text node", TextType.LINK, "httpss://boot.dev")
         self.assertEqual(node, node2)
+
+    def test_text_to_html(self):
+        # Test from prompt
+        node = TextNode("This is a text node", TextType.TEXT)
+        html_node = text_node_to_html_node(node)
+        self.assertIsInstance(html_node, LeafNode)
+        self.assertEqual(html_node.tag, None)
+        self.assertEqual(html_node.value, "This is a text node")
+
+    def test_bold_to_html(self):
+        node = TextNode("This is bold", TextType.BOLD)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "b")
+        self.assertEqual(html_node.value, "This is bold")
+
+    def test_italic_to_html(self):
+        node = TextNode("This is italic", TextType.ITALIC)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "i")
+        self.assertEqual(html_node.value, "This is italic")
+            
+    def test_code_to_html(self):
+        node = TextNode("This is code", TextType.CODE)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "code")
+        self.assertEqual(html_node.value, "This is code")
+
+    def test_link_to_html(self):
+        node = TextNode("Click me", TextType.LINK, "https://boot.dev")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "a")
+        self.assertEqual(html_node.value, "Click me")
+        self.assertEqual(html_node.props, {"href": "https://boot.dev"})
+
+    def test_image_to_html(self):
+        node = TextNode("An alt text", TextType.IMAGE, "/img.png")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "img")
+        self.assertEqual(html_node.value, "") # Value should be empty
+        self.assertEqual(html_node.props, {"src": "/img.png", "alt": "An alt text"})
+
+    def test_invalid_type_to_html(self):
+        node = TextNode("Invalid", TextType.TEXT) # Start valid
+        node.text_type = "invalid_string_type" # Force it to be invalid
+        
+        with self.assertRaises(ValueError):
+            text_node_to_html_node(node)
 
 
 if __name__ == "__main__":
