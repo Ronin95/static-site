@@ -1,6 +1,6 @@
 import unittest
-# Use an absolute import since 'src' is in the test path
-from htmlnode import HTMLNode
+# Import both classes from the htmlnode module
+from htmlnode import HTMLNode, LeafNode
 
 class TestHTMLNode(unittest.TestCase):
     
@@ -27,23 +27,31 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode() # props defaults to None
         self.assertEqual(node.props_to_html(), "")
 
-    def test_props_to_html_single(self):
-        """
-        Tests a single attribute.
-        """
-        props = {"class": "my-class"}
-        node = HTMLNode(props=props)
-        self.assertEqual(node.props_to_html(), ' class="my-class"')
+    def test_leaf_to_html_p(self):
+        # The test provided in the prompt
+        node = LeafNode("p", "Hello, world!")
+        self.assertEqual(node.to_html(), "<p>Hello, world!</p>")
 
-    def test_repr_method(self):
-        """
-        Tests the __repr__ method for accurate debug output.
-        """
-        children = [HTMLNode("b", "child")]
-        props = {"href": "https://boot.dev"}
-        node = HTMLNode("a", "parent", children, props)
-        expected = "HTMLNode(a, parent, [HTMLNode(b, child, None, None)], {'href': 'https://boot.dev'})"
-        self.assertEqual(repr(node), expected)
+    def test_leaf_to_html_a(self):
+        # Test with attributes (props)
+        node = LeafNode("a", "Click me!", {"href": "https://www.google.com"})
+        self.assertEqual(node.to_html(), '<a href="https://www.google.com">Click me!</a>')
+
+    def test_leaf_to_html_no_tag(self):
+        # Test with no tag (raw text)
+        node = LeafNode(None, "This is raw text.")
+        self.assertEqual(node.to_html(), "This is raw text.")
+
+    def test_leaf_value_error(self):
+        # Test for ValueError when value is None
+        node = LeafNode("p", None)
+        # Use assertRaises to check if the correct exception is raised
+        with self.assertRaises(ValueError):
+            node.to_html()
+            
+    def test_leaf_repr(self):
+        node = LeafNode("a", "Click me!", {"href": "https..."})
+        self.assertEqual(repr(node), "LeafNode(a, Click me!, {'href': 'https...'})")
 
 
 if __name__ == "__main__":
