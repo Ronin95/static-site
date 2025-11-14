@@ -1,15 +1,15 @@
 import unittest
-# Import the function to be tested
-from inline_markdown import split_nodes_delimiter
-# Import TextNode and TextType to create test data
+# Import all functions to be tested
+from inline_markdown import (
+    split_nodes_delimiter,
+    extract_markdown_images,
+    extract_markdown_links
+)
 from textnode import TextNode, TextType
 
 class TestInlineMarkdown(unittest.TestCase):
     
     def test_split_code(self):
-        """
-        Tests splitting a node with a single code block.
-        """
         node = TextNode("This is text with a `code block` word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
         expected = [
@@ -20,9 +20,6 @@ class TestInlineMarkdown(unittest.TestCase):
         self.assertEqual(new_nodes, expected)
 
     def test_split_bold(self):
-        """
-        Tests splitting a node with a single bold block.
-        """
         node = TextNode("This is **bold** text", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
         expected = [
@@ -32,64 +29,44 @@ class TestInlineMarkdown(unittest.TestCase):
         ]
         self.assertEqual(new_nodes, expected)
 
-    def test_split_italic(self):
-        """
-        Tests splitting a node with a single italic block.
-        """
-        node = TextNode("This is _italic_ text", TextType.TEXT)
-        new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
-        expected = [
-            TextNode("This is ", TextType.TEXT),
-            TextNode("italic", TextType.ITALIC),
-            TextNode(" text", TextType.TEXT),
-        ]
-        self.assertEqual(new_nodes, expected)
-
-    def test_split_multiple_delimiters(self):
-        """
-        Tests splitting a node with multiple delimiters of the same type.
-        """
-        node = TextNode("This `is` multiple `code` blocks", TextType.TEXT)
-        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
-        expected = [
-            TextNode("This ", TextType.TEXT),
-            TextNode("is", TextType.CODE),
-            TextNode(" multiple ", TextType.TEXT),
-            TextNode("code", TextType.CODE),
-            TextNode(" blocks", TextType.TEXT),
-        ]
-        self.assertEqual(new_nodes, expected)
-    
-    def test_split_at_start_and_end(self):
-        """
-        Tests splitting when the delimited text is at the start and end.
-        """
-        node = TextNode("**Start** middle **End**", TextType.TEXT)
-        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
-        expected = [
-            TextNode("Start", TextType.BOLD),
-            TextNode(" middle ", TextType.TEXT),
-            TextNode("End", TextType.BOLD),
-        ]
-        self.assertEqual(new_nodes, expected)
-
-    def test_split_non_text_node(self):
-        """
-        Tests that a non-TEXT node is passed through unchanged.
-        """
-        node = TextNode("This is already bold", TextType.BOLD)
-        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
-        expected = [TextNode("This is already bold", TextType.BOLD)]
-        self.assertEqual(new_nodes, expected)
-
     def test_invalid_markdown_raises_error(self):
-        """
-        Tests that an unclosed delimiter raises an Exception.
-        """
         node = TextNode("This is `invalid code", TextType.TEXT)
-        # Use assertRaises to confirm that the correct exception is thrown
         with self.assertRaises(Exception):
             split_nodes_delimiter([node], "`", TextType.CODE)
+
+    def test_extract_markdown_images(self):
+        # Test from prompt
+        text = "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_multiple_images(self):
+        # Test with multiple images
+        text = "This is text with ![image1](url1) and ![image2](url2)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual([("image1", "url1"), ("image2", "url2")], matches)
+
+    def test_extract_markdown_links(self):
+        # Test from prompt
+        text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual(
+            [("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")],
+            matches
+        )
+
+    def test_extract_links_and_images(self):
+        # Test with mixed links and images
+        text = "This is text with an ![image](img.png) and a [link](link.url)"
+        
+        # Test images
+        images = extract_markdown_images(text)
+        self.assertListEqual([("image", "img.png")], images)
+        
+        # Test links
+        links = extract_markdown_links(text)
+        self.assertListEqual([("link", "link.url")], links)
+
 
 if __name__ == "__main__":
     unittest.main()

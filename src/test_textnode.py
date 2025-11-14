@@ -30,8 +30,8 @@ class TestTextNode(unittest.TestCase):
     
     # Test for equality when URLs are the same
     def test_eq_with_url(self):
-        node = TextNode("This is a text node", TextType.LINK, "httpss://boot.dev")
-        node2 = TextNode("This is a text node", TextType.LINK, "httpss://boot.dev")
+        node = TextNode("This is a text node", TextType.LINK, "https://boot.dev")
+        node2 = TextNode("This is a text node", TextType.LINK, "https://boot.dev")
         self.assertEqual(node, node2)
 
     def test_text_to_html(self):
